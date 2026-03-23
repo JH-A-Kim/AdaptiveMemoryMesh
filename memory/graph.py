@@ -1,7 +1,7 @@
-import networkx as nx 
-import os 
-from dotenv import load_dotenv
+import os
 import pickle
+import networkx as nx
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -10,19 +10,24 @@ GRAPH_PATH = os.getenv("GRAPH_PATH", "memory/graph.gpickle")
 G = nx.DiGraph()
 
 def load_graph():
-    global G
-
     if os.path.exists(GRAPH_PATH):
         with open(GRAPH_PATH, "rb") as f:
-            G=pickle.load(f)
-        print(f"Graph loaded with {len(G.nodes)} nodes and {len(G.edges)} edges.")
+            loaded = pickle.load(f)
+        G.update(loaded)
+        print(f"[memory] loaded graph: {len(G.nodes)} nodes, {len(G.edges)} edges")
     else:
-        print("No existing graph found. Starting with an empty graph.")
+        print("[memory] no saved graph found, starting fresh")
+    
+    if "speaker" not in G:
+        G.add_node("speaker", id="speaker", label="User", type="person", score=1.0)
 def save_graph():
     with open(GRAPH_PATH, "wb") as f:
         pickle.dump(G, f)
-        
+
 def add_from_extraction(extracted: dict):
+    if "speaker" not in G:
+        G.add_node("speaker", id="speaker", label="User", type="person", score=1.0)
+
     for entity in extracted.get("entities", []):
         slug = entity["id"]
         if slug in G.nodes:
