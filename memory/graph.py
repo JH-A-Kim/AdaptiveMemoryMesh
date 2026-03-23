@@ -19,7 +19,12 @@ def get_context_string() -> str:
     for u, v, data in G.edges(data=True):
         u_label = G.nodes[u].get("label", u)
         v_label = G.nodes[v].get("label", v)
-        lines.append(f"{u_label} -> {data['relation']} -> {v_label}")
+        lines.append(f"{u_label} → {data['relation']} → {v_label}")
+
+    connected = {n for edge in G.edges() for n in edge}
+    for node_id in G.nodes:
+        if node_id not in connected:
+            node = G.nodes[node_id]
+            lines.append(f"{node.get('label', node_id)} [type: {node.get('type', 'unknown')}]")
 
     return "\n".join(lines) if lines else "No memory yet."
-
